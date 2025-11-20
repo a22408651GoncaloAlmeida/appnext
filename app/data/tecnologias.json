@@ -1,0 +1,50 @@
+[
+  {
+    "title": "HTML",
+    "image": "html.svg",
+    "description": "Linguagem de marcação usada para estruturar páginas web.",
+    "rating": 5
+  },
+  {
+    "title": "CSS",
+    "image": "css.svg",
+    "description": "Folhas de estilo para estilizar conteúdos HTML.",
+    "rating": 5
+  },
+  {
+    "title": "Tailwind CSS",
+    "image": "tailwind.svg",
+    "description": "Framework utilitário para CSS que acelera o desenvolvimento responsivo.",
+    "rating": 4
+  },
+  {
+    "title": "JavaScript",
+    "image": "javascript.svg",
+    "description": "Linguagem de programação para dinamizar páginas web.",
+    "rating": 5
+  },
+  {
+    "title": "TypeScript",
+    "image": "typescript.svg",
+    "description": "Superset de JavaScript com tipagem estática opcional.",
+    "rating": 4
+  },
+  {
+    "title": "JSON",
+    "image": "json.svg",
+    "description": "Formato leve para troca de dados entre cliente e servidor.",
+    "rating": 4
+  },
+  {
+    "title": "API RESTful",
+    "image": "api.svg",
+    "description": "Arquitetura para comunicação entre sistemas via HTTP.",
+    "rating": 4
+  },
+  {
+    "title": "Swagger",
+    "image": "swagger.svg",
+    "description": "Ferramenta para descrever, documentar e testar APIs.",
+    "rating": 3
+  }
+]

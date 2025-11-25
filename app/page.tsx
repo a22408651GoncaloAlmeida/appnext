@@ -1,6 +1,6 @@
 import MagiaDoJSX from "@/components/MagiaDoJSX"
 
-export default function page() {
+export default function HomePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>

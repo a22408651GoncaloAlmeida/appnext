@@ -1,11 +1,6 @@
 import Link from 'next/link';
 
-interface CaracteristicaProps {
-  caracteristica: string;
-  index: number;
-}
-
-export default function Caracteristica({ caracteristica, index }: CaracteristicaProps) {
+export default function Caracteristica({ caracteristica, index }) {
   const encodedCaracteristica = encodeURIComponent(caracteristica);
 
   return (

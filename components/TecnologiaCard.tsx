@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import ContadorPersonalizado from './ContadorPersonalizado'
 
 interface TecnologiaCardProps {
   title: string;
@@ -21,6 +22,7 @@ export default function TecnologiaCard({ title, image, index }: TecnologiaCardPr
           />
         </div>
         <h3 className="text-center font-semibold text-sm">{title}</h3>
+        <ContadorPersonalizado title={title} />
       </div>
     </Link>
   );

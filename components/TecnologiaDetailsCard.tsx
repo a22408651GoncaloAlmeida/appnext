@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import ContadorPersonalizado from './ContadorPersonalizado'
 
 interface TecnologiaDetailsCardProps {
   title: string;
@@ -43,6 +44,9 @@ export default function TecnologiaDetailsCard({
           <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
             ({rating}/5)
           </span>
+        </div>
+        <div className="mt-4">
+          <ContadorPersonalizado title={title} />
         </div>
       </div>
     </div>

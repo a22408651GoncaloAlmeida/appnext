@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "title": "Camiseta React",
+    "image": "html.svg",
+    "price": 19.9,
+    "category": "Roupas"
+  },
+  {
+    "id": 2,
+    "title": "Caneca JavaScript",
+    "image": "javascript.svg",
+    "price": 9.5,
+    "category": "Acessórios"
+  },
+  {
+    "id": 3,
+    "title": "Poster TypeScript",
+    "image": "typescript.svg",
+    "price": 7.0,
+    "category": "Decoração"
+  },
+  {
+    "id": 4,
+    "title": "Mochila Tailwind",
+    "image": "tailwind.svg",
+    "price": 49.9,
+    "category": "Roupas"
+  }
+]

@@ -17,16 +17,16 @@ async function fetchProdutos(url: string): Promise<Product[]> {
 export default function ProdutosPage() {
   const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetchProdutos)
 
-  // 🛒 carrinho
+  // carrinho
   const [cart, setCart] = useState<Product[]>([])
 
-  // 🎓 estudante
+  // estudante
   const [student, setStudent] = useState(false)
 
-  // 🎟️ cupão
+  // cupão
   const [coupon, setCoupon] = useState('')
 
-  // 📩 resposta da compra
+  // resposta da compra
   const [buyResponse, setBuyResponse] = useState<any>(null)
 
   // carregar carrinho
@@ -48,13 +48,13 @@ export default function ProdutosPage() {
     setCart((prev) => prev.filter((p) => p.id !== id))
   }
 
-  // 💰 total
+  // total
   const total = cart.reduce(
     (sum, produto) => sum + Number(produto.price),
     0
   )
 
-  // 🛍️ COMPRAR
+  // COMPRAR
   async function buy() {
     try {
       const response = await fetch(BUY_URL, {
@@ -122,7 +122,7 @@ export default function ProdutosPage() {
             Total: € {total.toFixed(2)}
           </p>
 
-          {/* 🎓 ESTUDANTE */}
+          {/* ESTUDANTE */}
           <label className="block mt-4">
             <input
               type="checkbox"
@@ -133,7 +133,7 @@ export default function ProdutosPage() {
             Estudante DEISI
           </label>
 
-          {/* 🎟️ CUPÃO */}
+          {/* CUPÃO */}
           <input
             type="text"
             placeholder="Cupão de desconto"
@@ -142,7 +142,7 @@ export default function ProdutosPage() {
             className="border p-2 mt-2 block"
           />
 
-          {/* 🛒 BOTÃO COMPRAR */}
+          {/* BOTÃO COMPRAR */}
           <button
             onClick={buy}
             className="bg-blue-600 text-white px-6 py-2 rounded mt-4"
@@ -152,7 +152,7 @@ export default function ProdutosPage() {
         </>
       )}
 
-      {/* 📩 RESPOSTA DA API */}
+      {/* RESPOSTA DA API */}
       {buyResponse && (
         <pre className="bg-gray-100 p-4 mt-6 text-sm">
           {JSON.stringify(buyResponse, null, 2)}

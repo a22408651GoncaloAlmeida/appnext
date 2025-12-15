@@ -1,70 +1,40 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import produtosRaw from '@/app/data/produtos.json'
-import Image from 'next/image'
+import { useParams } from 'next/navigation'
+import useSWR from 'swr'
+import { Product } from '@/models/interfaces'
+import ProdutoDetalhe from '@/components/ProdutoDetalhe'
 
-type Produto = {
-  id: number
-  title: string
-  image: string
-  price: number
-  category: string
-}
+const API_BASE = 'https://deisishop.pythonanywhere.com'
 
-const initialProdutos = JSON.parse(JSON.stringify(produtosRaw)) as Produto[]
-
-interface Params {
-  id: string
-}
-
-export default function ProdutoPage({ params }: { params: Params }) {
-  const id = parseInt(params.id, 10)
-  const router = useRouter()
-  const [produtos, setProdutos] = useState<Produto[]>(initialProdutos)
-  const [produto, setProduto] = useState<Produto | null>(null)
-
-  useEffect(() => {
-    const removedRaw = localStorage.getItem('produtos:removidos')
-    const removed = removedRaw ? JSON.parse(removedRaw) as number[] : []
-    setProdutos(initialProdutos.filter((p) => !removed.includes(p.id)))
-  }, [])
-
-  useEffect(() => {
-    setProduto(produtos.find((p) => p.id === id) ?? null)
-  }, [produtos, id])
-
-  function remover() {
-    const raw = localStorage.getItem('produtos:removidos')
-    const removed = raw ? JSON.parse(raw) as number[] : []
-    const next = Array.from(new Set([...removed, id]))
-    localStorage.setItem('produtos:removidos', JSON.stringify(next))
-    router.push('/produtos')
+async function fetchProduto(url: string): Promise<Product> {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error('Erro ao obter produto')
   }
+  return res.json()
+}
 
-  if (!produto) return (
-    <main className="p-8">
-      <p>Produto não encontrado ou removido.</p>
-      <button onClick={() => router.back()} className="mt-4 bg-gray-200 px-3 py-1 rounded">Voltar</button>
-    </main>
+export default function ProdutoPage() {
+  const params = useParams()
+  const id = params.id
+
+  const { data, error, isLoading } = useSWR<Product>(
+    `${API_BASE}/products/${id}`,
+    fetchProduto
   )
 
-  return (
-    <main className="p-8 flex flex-col items-center gap-6">
-      <div className="border rounded p-6 flex flex-col items-center gap-4">
-        <div className="w-40 h-40 relative">
-          <Image src={`/tecnologias/${produto.image}`} alt={produto.title} width={160} height={160} className="object-contain" />
-        </div>
-        <h1 className="text-2xl font-bold">{produto.title}</h1>
-        <p className="text-sm text-gray-600">{produto.category}</p>
-        <p className="font-semibold">€ {produto.price.toFixed(2)}</p>
+  if (isLoading) {
+    return <p className="p-8">A carregar produto...</p>
+  }
 
-        <div className="flex gap-3">
-          <button onClick={() => router.back()} className="bg-gray-200 px-3 py-1 rounded">Voltar</button>
-          <button onClick={remover} className="bg-red-500 text-white px-3 py-1 rounded">Remover Produto</button>
-        </div>
-      </div>
+  if (error || !data) {
+    return <p className="p-8 text-red-600">Erro ao carregar produto</p>
+  }
+
+  return (
+    <main className="p-8">
+      <ProdutoDetalhe produto={data} />
     </main>
   )
 }

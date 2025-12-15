@@ -1,85 +1,162 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { Product } from '@/models/interfaces'
+import ProdutoCard from '@/components/ProdutoCard'
 
-type Produto = {
-  id: number
-  title: string
-  price: number
-  category: string
-  description: string
-  image: string
-  rating?: {
-    rate: number
-    count: number
-  }
+const API_URL = 'https://deisishop.pythonanywhere.com/products'
+const BUY_URL = 'https://deisishop.pythonanywhere.com/buy'
+
+async function fetchProdutos(url: string): Promise<Product[]> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Erro ao obter produtos')
+  return res.json()
 }
 
-const API_BASE = "https://deisishop.pythonanywhere.com"
-
 export default function ProdutosPage() {
-  const [produtos, setProdutos] = useState<Produto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetchProdutos)
 
+  // 🛒 carrinho
+  const [cart, setCart] = useState<Product[]>([])
+
+  // 🎓 estudante
+  const [student, setStudent] = useState(false)
+
+  // 🎟️ cupão
+  const [coupon, setCoupon] = useState('')
+
+  // 📩 resposta da compra
+  const [buyResponse, setBuyResponse] = useState<any>(null)
+
+  // carregar carrinho
   useEffect(() => {
-    async function fetchProdutos() {
-      try {
-        setLoading(true)
-        const response = await fetch(`${API_BASE}/products`)
-        if (!response.ok) throw new Error('Erro ao buscar produtos')
-        const data = await response.json()
-        setProdutos(Array.isArray(data) ? data : data.products || [])
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido')
-        setProdutos([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProdutos()
+    const storedCart = localStorage.getItem('cart')
+    if (storedCart) setCart(JSON.parse(storedCart))
   }, [])
 
-  if (loading) return <main className="p-8"><p>Carregando produtos...</p></main>
-  if (error) return <main className="p-8"><p className="text-red-500">Erro: {error}</p></main>
+  // guardar carrinho
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
+  function addToCart(produto: Product) {
+    setCart((prev) => [...prev, produto])
+  }
+
+  function removeFromCart(id: number) {
+    setCart((prev) => prev.filter((p) => p.id !== id))
+  }
+
+  // 💰 total
+  const total = cart.reduce(
+    (sum, produto) => sum + Number(produto.price),
+    0
+  )
+
+  // 🛍️ COMPRAR
+  async function buy() {
+    try {
+      const response = await fetch(BUY_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          products: cart.map((p) => p.id),
+          name: 'Cliente',
+          student: student,
+          coupon: coupon,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(response.statusText)
+      }
+
+      const data = await response.json()
+      setBuyResponse(data)
+      setCart([])
+      localStorage.removeItem('cart')
+    } catch (err) {
+      console.error('Erro ao comprar')
+    }
+  }
+
+  if (isLoading) return <p className="p-8">A carregar produtos...</p>
+  if (error) return <p className="p-8 text-red-600">Erro ao carregar produtos</p>
 
   return (
     <main className="p-8">
-      <h2 className="text-2xl font-bold mb-6">DEISIshop - Produtos</h2>
+      <h1 className="text-2xl font-bold mb-4">Produtos</h1>
 
-      {produtos.length === 0 ? (
-        <p className="text-gray-500">Nenhum produto disponível</p>
+      {/* PRODUTOS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {data?.map((produto) => (
+          <ProdutoCard
+            key={produto.id}
+            produto={produto}
+            onAdd={addToCart}
+          />
+        ))}
+      </div>
+
+      {/* CARRINHO */}
+      <h2 className="text-xl font-bold mt-10 mb-4">Carrinho</h2>
+
+      {cart.length === 0 ? (
+        <p>O carrinho está vazio.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {produtos.map((p) => (
-            <article key={p.id} className="border rounded p-4 flex flex-col items-center gap-3 bg-white shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-28 h-28 relative bg-gray-50 rounded flex items-center justify-center">
-                <Image 
-                  src={p.image} 
-                  alt={p.title} 
-                  width={112} 
-                  height={112} 
-                  className="object-contain"
-                  unoptimized
-                />
-              </div>
-              <h3 className="font-semibold text-center">{p.title}</h3>
-              <p className="text-sm text-gray-600">{p.category}</p>
-              {p.rating && (
-                <p className="text-sm text-yellow-500">⭐ {p.rating.rate} ({p.rating.count})</p>
-              )}
-              <p className="font-semibold">€ {p.price.toFixed(2)}</p>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cart.map((produto, index) => (
+              <ProdutoCard
+                key={`${produto.id}-${index}`}
+                produto={produto}
+                onRemove={removeFromCart}
+              />
+            ))}
+          </div>
 
-              <div className="flex gap-2">
-                <Link href={`/loja/${p.id}`} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Ver</Link>
-              </div>
-            </article>
-          ))}
-        </div>
+          <p className="text-lg font-semibold mt-4">
+            Total: € {total.toFixed(2)}
+          </p>
+
+          {/* 🎓 ESTUDANTE */}
+          <label className="block mt-4">
+            <input
+              type="checkbox"
+              checked={student}
+              onChange={(e) => setStudent(e.target.checked)}
+              className="mr-2"
+            />
+            Estudante DEISI
+          </label>
+
+          {/* 🎟️ CUPÃO */}
+          <input
+            type="text"
+            placeholder="Cupão de desconto"
+            value={coupon}
+            onChange={(e) => setCoupon(e.target.value)}
+            className="border p-2 mt-2 block"
+          />
+
+          {/* 🛒 BOTÃO COMPRAR */}
+          <button
+            onClick={buy}
+            className="bg-blue-600 text-white px-6 py-2 rounded mt-4"
+          >
+            Comprar
+          </button>
+        </>
+      )}
+
+      {/* 📩 RESPOSTA DA API */}
+      {buyResponse && (
+        <pre className="bg-gray-100 p-4 mt-6 text-sm">
+          {JSON.stringify(buyResponse, null, 2)}
+        </pre>
       )}
     </main>
   )

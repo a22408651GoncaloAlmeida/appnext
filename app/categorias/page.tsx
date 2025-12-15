@@ -15,7 +15,7 @@ export default function CategoriasPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categorias.map((c) => (
-          <Link key={c.category} href={`/categoria/${encodeURIComponent(c.category)}`} className="border rounded p-4 flex flex-col items-center gap-3">
+          <Link key={c.category} href={`/categorias/${encodeURIComponent(c.category)}`} className="border rounded p-4 flex flex-col items-center gap-3">
             <div className="w-24 h-24 bg-gray-50 rounded flex items-center justify-center">
               <img src={`/tecnologias/${c.image}`} alt={c.category} className="w-16 h-16 object-contain" />
             </div>

@@ -16,7 +16,6 @@ export default function TecnologiasPage() {
     <main className="flex flex-col gap-6">
       <h2 className="text-2xl font-bold">Tecnologias Exploradas</h2>
 
-      // Renderizar os cartões de tecnologia
       <div className="flex flex-wrap gap-6 justify-center">
         {tecnologias.map((tech, index) => (
           <TecnologiaCard

@@ -12,22 +12,23 @@ export default function CaracteristicasPage() {
         'Renderização Rápida e SEO Friendly.',
         'TypeScript Seguro e Escalável.',
         'Comunidade Ativa e Popularidade.'
-    ]
+  ]
   
-    // Renderizar a lista de características
-    return (
-    <div className="flex flex-col gap-6">
-      <h2 className="text-2xl font-bold">Características do React e Next.js</h2>
-      <ul className="flex flex-col gap-3">
-        {caracteristicas.map((caracteristica, i) => {
-            return (
-              <Caracteristica 
-                key={i} 
-                caracteristica={caracteristica}
-                index={i}
-              />
-            )
-        })}
+  // Renderizar a lista de características
+  return (
+    <div className="bg-slate-800 text-white p-6 rounded-lg shadow w-full max-w-3xl mx-auto">
+      <h2 className="text-2xl font-bold text-center mb-6">
+        Características do React e Next.js
+      </h2>
+
+      <ul className="flex flex-col items-center gap-4">
+        {caracteristicas.map((caracteristica, i) => (
+          <Caracteristica
+            key={i}
+            caracteristica={caracteristica}
+            index={i}
+          />
+        ))}
       </ul>
     </div>
   )

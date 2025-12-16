@@ -1,44 +1,231 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { Product } from '@/models/interfaces'
-import ProdutoDetalhe from '@/components/ProdutoDetalhe'
+import ProdutoCard from '@/components/ProdutoCard'
 
-const API_BASE = 'https://deisishop.pythonanywhere.com'
+const API_URL = 'https://deisishop.pythonanywhere.com/products'
+const BUY_URL = 'https://deisishop.pythonanywhere.com/buy'
 
-// Função para buscar o produto
-async function fetchProduto(url: string): Promise<Product> {
+// Função para buscar os produtos
+async function fetchProdutos(url: string): Promise<Product[]> {
   const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error('Erro ao obter produto')
-  }
+  if (!res.ok) throw new Error('Erro ao obter produtos')
   return res.json()
 }
 
-// Componente da página do produto
-export default function ProdutoPage() {
-  const params = useParams()
-  const id = params.id
+export default function ProdutosPage() {
+  const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetchProdutos)
 
-  // Usar SWR para buscar os dados do produto
-  const { data, error, isLoading } = useSWR<Product>(
-    `${API_BASE}/products/${id}`,
-    fetchProduto
+  // 🔍 pesquisa
+  const [search, setSearch] = useState('')
+
+  // 🔃 ordenação
+  const [order, setOrder] = useState('name-asc')
+
+  // 📦 produtos filtrados
+  const [filteredData, setFilteredData] = useState<Product[]>([])
+
+  // carrinho
+  const [cart, setCart] = useState<Product[]>([])
+
+  // estudante
+  const [student, setStudent] = useState(false)
+
+  // cupão
+  const [coupon, setCoupon] = useState('')
+
+  // resposta da compra
+  const [buyResponse, setBuyResponse] = useState<any>(null)
+
+  // carregar carrinho
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cart')
+    if (storedCart) setCart(JSON.parse(storedCart))
+  }, [])
+
+  // guardar carrinho
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
+  // 🔄 filtrar + ordenar sempre que algo muda
+  useEffect(() => {
+    if (!data) return
+
+    let result = [...data]
+
+    // 🔍 filtro por nome (case insensitive)
+    result = result.filter(p =>
+      p.title.toLowerCase().includes(search.toLowerCase())
+    )
+
+    // 🔃 ordenação
+    switch (order) {
+      case 'name-asc':
+        result.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case 'name-desc':
+        result.sort((a, b) => b.title.localeCompare(a.title))
+        break
+      case 'price-asc':
+        result.sort((a, b) => Number(a.price) - Number(b.price))
+        break
+      case 'price-desc':
+        result.sort((a, b) => Number(b.price) - Number(a.price))
+        break
+    }
+
+    setFilteredData(result)
+  }, [data, search, order])
+
+  function addToCart(produto: Product) {
+    setCart(prev => [...prev, produto])
+  }
+
+  function removeFromCart(id: number) {
+    setCart(prev => prev.filter(p => p.id !== id))
+  }
+
+  // total
+  const total = cart.reduce(
+    (sum, produto) => sum + Number(produto.price),
+    0
   )
 
-  if (isLoading) {
-    return <p className="p-8">A carregar produto...</p>
+  // COMPRAR
+  async function buy() {
+    try {
+      const response = await fetch(BUY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          products: cart.map(p => p.id),
+          name: 'Cliente',
+          student: student,
+          coupon: coupon,
+        }),
+      })
+
+      if (!response.ok) throw new Error(response.statusText)
+
+      const data = await response.json()
+      setBuyResponse(data)
+      setCart([])
+      localStorage.removeItem('cart')
+    } catch {
+      console.error('Erro ao comprar')
+    }
   }
 
-  if (error || !data) {
-    return <p className="p-8 text-red-600">Erro ao carregar produto</p>
-  }
+  if (isLoading) return <p className="p-8">A carregar produtos...</p>
+  if (error) return <p className="p-8 text-red-600">Erro ao carregar produtos</p>
 
-  // Renderizar a página do produto
   return (
     <main className="p-8">
-      <ProdutoDetalhe produto={data} />
+      <h1 className="text-2xl font-bold mb-4">Produtos</h1>
+
+      {/* 🔍 PESQUISA */}
+      <input
+        type="text"
+        placeholder="Pesquisar produto..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="border p-2 mb-4 w-full max-w-md"
+      />
+
+      {/* 🔃 ORDENAÇÃO */}
+      <select
+        value={order}
+        onChange={e => setOrder(e.target.value)}
+        className="border p-2 mb-6 block"
+      >
+        <option value="name-asc">Nome (A-Z)</option>
+        <option value="name-desc">Nome (Z-A)</option>
+        <option value="price-asc">Preço (crescente)</option>
+        <option value="price-desc">Preço (decrescente)</option>
+      </select>
+
+      {/* PRODUTOS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredData.map(produto => (
+          <ProdutoCard
+            key={produto.id}
+            produto={produto}
+            onAdd={addToCart}
+          />
+        ))}
+      </div>
+
+      {/* CARRINHO */}
+      <h2 className="text-xl font-bold mt-10 mb-4">Carrinho</h2>
+
+      {cart.length === 0 ? (
+        <p>O carrinho está vazio.</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cart.map((produto, index) => (
+              <ProdutoCard
+                key={`${produto.id}-${index}`}
+                produto={produto}
+                onRemove={removeFromCart}
+              />
+            ))}
+          </div>
+
+          <p className="text-lg font-semibold mt-4">
+            Total: € {total.toFixed(2)}
+          </p>
+
+          <label className="block mt-4">
+            <input
+              type="checkbox"
+              checked={student}
+              onChange={e => setStudent(e.target.checked)}
+              className="mr-2"
+            />
+            Estudante DEISI
+          </label>
+
+          <input
+            type="text"
+            placeholder="Cupão de desconto"
+            value={coupon}
+            onChange={e => setCoupon(e.target.value)}
+            className="border p-2 mt-2 block"
+          />
+
+          <button
+            onClick={buy}
+            className="bg-blue-600 text-white px-6 py-2 rounded mt-4"
+          >
+            Comprar
+          </button>
+        </>
+      )}
+
+      {/* RESPOSTA DA API */}
+      {buyResponse && (
+        <div className="mt-8 max-w-xl bg-white text-gray-800 border border-gray-300 rounded-lg p-6 shadow">
+          <h3 className="text-xl font-bold mb-4 text-green-700">
+            Compra realizada com sucesso
+          </h3>
+
+          <p className="mb-3">{buyResponse.message}</p>
+
+          <p className="mb-2">
+            O valor total da sua compra foi de{' '}
+            <strong>€ {Number(buyResponse.totalCost).toFixed(2)}</strong>.
+          </p>
+
+          <p>
+            A referência da sua compra é{' '}
+            <strong className="font-mono">{buyResponse.reference}</strong>.
+          </p>
+        </div>
+      )}
     </main>
   )
 }

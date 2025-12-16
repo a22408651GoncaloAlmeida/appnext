@@ -1,28 +1,40 @@
 'use client'
 
-import React from 'react'
-import produtosRaw from '@/app/data/produtos.json'
+import useSWR from 'swr'
 import Link from 'next/link'
+import { Product } from '@/models/interfaces'
 
-// Carregar produtos do arquivo JSON
-const produtos = JSON.parse(JSON.stringify(produtosRaw)) as Array<{ id:number, category:string, image:string }>
+const API_URL = 'https://deisishop.pythonanywhere.com/products'
 
-// Componente da página que lista todas as categorias
+const fetcher = (url: string) =>
+  fetch(url).then(res => {
+    if (!res.ok) throw new Error('Erro')
+    return res.json()
+  })
+
 export default function CategoriasPage() {
-  const categorias = Array.from(new Map(produtos.map(p => [p.category, p])).values())
+  const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetcher)
 
-  // Renderizar a lista de categorias
+  if (isLoading) return <p className="p-8">A carregar...</p>
+  if (error || !data) return <p className="p-8">Erro</p>
+
+  // 🔹 extrair categorias únicas da API
+  const categorias = Array.from(
+    new Set(data.map(p => p.category))
+  )
+
   return (
     <main className="p-8">
       <h2 className="text-2xl font-bold mb-6">Categorias</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categorias.map((c) => (
-          <Link key={c.category} href={`/categorias/${encodeURIComponent(c.category)}`} className="border rounded p-4 flex flex-col items-center gap-3">
-            <div className="w-24 h-24 bg-gray-50 rounded flex items-center justify-center">
-              <img src={`/tecnologias/${c.image}`} alt={c.category} className="w-16 h-16 object-contain" />
-            </div>
-            <h3 className="font-semibold">{c.category}</h3>
+      <div className="flex flex-col gap-4 items-center">
+        {categorias.map((cat) => (
+          <Link
+            key={cat}
+            href={`/categorias/${encodeURIComponent(cat)}`}
+            className="border rounded p-4 w-full max-w-xl text-center hover:bg-gray-50"
+          >
+            {cat}
           </Link>
         ))}
       </div>

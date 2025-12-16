@@ -6,7 +6,7 @@ export default function MagiaDoJSX() {
     const [count, setCount] = useState(0);
     const [historico, setHistorico] = useState([]);
 
-    // Carregar valores guardados
+    // Carregar valores guardados no localStorage
     useEffect(() => {
         const savedValor = localStorage.getItem("contador_valor");
         const savedHistory = localStorage.getItem("contador_historico");
@@ -18,7 +18,6 @@ export default function MagiaDoJSX() {
         if (savedHistory) {
             setHistorico(JSON.parse(savedHistory));
         }
-
     }, []);
 
     // Guardar no localStorage sempre que mudar
@@ -27,22 +26,29 @@ export default function MagiaDoJSX() {
         localStorage.setItem("contador_historico", JSON.stringify(historico));
     }, [count, historico]);
 
-
     // Lógica do contador com limites
     const atualizarContador = (novoValor) => {
 
-    if (novoValor < 0 || novoValor > 10) {
-        return;
-    }
+        if (novoValor < 0 || novoValor > 10) {
+            return;
+        }
 
-    if (novoValor === count) {
-        return;
-    }
+        if (novoValor === count) {
+            return;
+        }
 
-    setCount(novoValor);
-    setHistorico([...historico, novoValor]);
+        setCount(novoValor);
+        setHistorico([...historico, novoValor]);
     };
 
+    // Reset completo (contador + histórico + localStorage)
+    const resetar = () => {
+        setCount(0);
+        setHistorico([]);
+
+        localStorage.removeItem("contador_valor");
+        localStorage.removeItem("contador_historico");
+    };
 
     // Cores conforme o valor
     const getTailwindColor = (valor) => {
@@ -50,7 +56,6 @@ export default function MagiaDoJSX() {
         if (valor <= 7) return 'text-yellow-500';
         return 'text-green-500';
     };
-
 
     return (
         <>
@@ -61,27 +66,32 @@ export default function MagiaDoJSX() {
             </p>
 
             <button
-            className="border px-4 py-2 mx-2 rounded"
-            onClick={() => atualizarContador(count + 1)}
-            >+</button>
+                className="border px-4 py-2 mx-2 rounded"
+                onClick={() => atualizarContador(count + 1)}
+            >
+                +
+            </button>
 
             <button
                 className="border px-4 py-2 mx-2 rounded"
                 onClick={() => atualizarContador(count - 1)}
-            >-</button>
+            >
+                -
+            </button>
 
             <button
                 className="border px-4 py-2 mx-2 rounded"
-                onClick={() => atualizarContador(0)}
-            >Reset</button>
+                onClick={resetar}
+            >
+                Reset
+            </button>
 
-
-           <h2>Histórico</h2>
-           <ul>
-              {historico.map((v, i) => (
-                   <li key={i}>{v}</li>
-              ))}
-           </ul>
+            <h2>Histórico</h2>
+            <ul>
+                {historico.map((v, i) => (
+                    <li key={i}>{v}</li>
+                ))}
+            </ul>
         </>
     );
 }

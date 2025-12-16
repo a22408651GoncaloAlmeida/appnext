@@ -4,11 +4,14 @@ import React from 'react'
 import produtosRaw from '@/app/data/produtos.json'
 import Link from 'next/link'
 
+// Carregar produtos do arquivo JSON
 const produtos = JSON.parse(JSON.stringify(produtosRaw)) as Array<{ id:number, category:string, image:string }>
 
+// Componente da página que lista todas as categorias
 export default function CategoriasPage() {
   const categorias = Array.from(new Map(produtos.map(p => [p.category, p])).values())
 
+  // Renderizar a lista de categorias
   return (
     <main className="p-8">
       <h2 className="text-2xl font-bold mb-6">Categorias</h2>

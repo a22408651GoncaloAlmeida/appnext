@@ -23,12 +23,14 @@ export default function CategoriaPage({ params }: { params: Params }) {
   const categoria = decodeURIComponent(params.categoria)
   const [produtos, setProdutos] = useState<Produto[]>([])
 
+  // Filtrar produtos pela categoria e removidos do localStorage
   useEffect(() => {
     const removedRaw = localStorage.getItem('produtos:removidos')
     const removed = removedRaw ? JSON.parse(removedRaw) as number[] : []
     setProdutos(initialProdutos.filter((p) => p.category === categoria && !removed.includes(p.id)))
   }, [categoria])
 
+  // Renderizar a página da categoria com os produtos filtrados
   return (
     <main className="p-8">
       <h2 className="text-2xl font-bold mb-6">Categoria: {categoria}</h2>

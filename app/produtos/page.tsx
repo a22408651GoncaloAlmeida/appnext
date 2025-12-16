@@ -8,12 +8,14 @@ import ProdutoCard from '@/components/ProdutoCard'
 const API_URL = 'https://deisishop.pythonanywhere.com/products'
 const BUY_URL = 'https://deisishop.pythonanywhere.com/buy'
 
+// Função para buscar os produtos
 async function fetchProdutos(url: string): Promise<Product[]> {
   const res = await fetch(url)
   if (!res.ok) throw new Error('Erro ao obter produtos')
   return res.json()
 }
 
+// Componente da página de produtos
 export default function ProdutosPage() {
   const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetchProdutos)
 
@@ -154,10 +156,37 @@ export default function ProdutosPage() {
 
       {/* RESPOSTA DA API */}
       {buyResponse && (
-        <pre className="bg-gray-100 p-4 mt-6 text-sm">
-          {JSON.stringify(buyResponse, null, 2)}
-        </pre>
+        <div className="
+          mt-8
+          max-w-xl
+          bg-white
+          text-gray-800
+          border
+          border-gray-300
+          rounded-lg
+          p-6
+          shadow
+        ">
+          <h3 className="text-xl font-bold mb-4 text-green-700">
+            Compra realizada com sucesso 
+          </h3>
+
+          <p className="mb-3">
+            {buyResponse.message}
+          </p>
+
+          <p className="mb-2">
+            O valor total da sua compra foi de{' '}
+            <strong>€ {Number(buyResponse.totalCost).toFixed(2)}</strong>.
+          </p>
+
+          <p>
+            A referência da sua compra é{' '}
+            <strong className="font-mono">{buyResponse.reference}</strong>.
+          </p>
+        </div>
       )}
+
     </main>
   )
 }

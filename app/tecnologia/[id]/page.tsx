@@ -5,6 +5,7 @@ import Link from 'next/link';
 import TecnologiaDetailsCard from '@/components/TecnologiaDetailsCard';
 import tecnologiasRaw from '@/app/data/tecnologias.json';
 
+// Carregar tecnologias do arquivo JSON
 const tecnologias = JSON.parse(JSON.stringify(tecnologiasRaw)) as Array<{
   title: string;
   image: string;
@@ -12,12 +13,14 @@ const tecnologias = JSON.parse(JSON.stringify(tecnologiasRaw)) as Array<{
   rating: number;
 }>;
 
+// Definir os tipos de props para a página de tecnologia
 interface TecnologiaPageProps {
   params: Promise<{
     id: string;
   }>;
 }
 
+// Componente da página de tecnologia
 export default async function TecnologiaPage({ params }: TecnologiaPageProps) {
   const { id } = await params;
   const index = parseInt(id, 10);

@@ -1,6 +1,7 @@
 import React from 'react'
 import Caracteristica from '@/components/Caracteristica'
 
+// Componente da página que lista todas as características
 export default function CaracteristicasPage() {
   const caracteristicas = [
         'JSX, sintaxe que mistura HTML e JS.',
@@ -13,6 +14,7 @@ export default function CaracteristicasPage() {
         'Comunidade Ativa e Popularidade.'
     ]
   
+    // Renderizar a lista de características
     return (
     <div className="flex flex-col gap-6">
       <h2 className="text-2xl font-bold">Características do React e Next.js</h2>

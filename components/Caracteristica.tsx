@@ -5,6 +5,7 @@ interface CaracteristicaProps {
   index: number;
 }
 
+// Componente para exibir uma característica com link
 export default function Caracteristica({ caracteristica, index }: CaracteristicaProps) {
   return (
     <Link href={`/caracteristica/${index}`}>

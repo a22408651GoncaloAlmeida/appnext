@@ -7,6 +7,7 @@ import ProdutoDetalhe from '@/components/ProdutoDetalhe'
 
 const API_BASE = 'https://deisishop.pythonanywhere.com'
 
+// Função para buscar o produto
 async function fetchProduto(url: string): Promise<Product> {
   const res = await fetch(url)
   if (!res.ok) {
@@ -15,10 +16,12 @@ async function fetchProduto(url: string): Promise<Product> {
   return res.json()
 }
 
+// Componente da página do produto
 export default function ProdutoPage() {
   const params = useParams()
   const id = params.id
 
+  // Usar SWR para buscar os dados do produto
   const { data, error, isLoading } = useSWR<Product>(
     `${API_BASE}/products/${id}`,
     fetchProduto
@@ -32,6 +35,7 @@ export default function ProdutoPage() {
     return <p className="p-8 text-red-600">Erro ao carregar produto</p>
   }
 
+  // Renderizar a página do produto
   return (
     <main className="p-8">
       <ProdutoDetalhe produto={data} />

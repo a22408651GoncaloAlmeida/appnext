@@ -6,6 +6,7 @@ import Image from 'next/image'
 
 const API_BASE = 'https://deisishop.pythonanywhere.com'
 
+// Definindo o tipo para o produto
 type Produto = {
   id: number
   title: string
@@ -15,17 +16,20 @@ type Produto = {
   image: string
 }
 
+// Componente da página do produto
 export default function ProdutoPage() {
   const { id } = useParams()
   const router = useRouter()
   const [produto, setProduto] = useState<Produto | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Buscar os dados do produto ao carregar o componente
   useEffect(() => {
     async function fetchProduto() {
       const res = await fetch(`${API_BASE}/products/${id}`)
       const data = await res.json()
 
+      // Ajustar os dados do produto conforme necessário
       setProduto({
         ...data,
         price: Number(data.price),
@@ -35,13 +39,13 @@ export default function ProdutoPage() {
       })
       setLoading(false)
     }
-
     fetchProduto()
   }, [id])
 
   if (loading) return <p className="p-8">A carregar...</p>
   if (!produto) return <p className="p-8">Produto não encontrado</p>
 
+  // Renderizar a página do produto
   return (
     <main className="p-8 max-w-xl mx-auto">
       <Image src={produto.image} alt={produto.title} width={300} height={300} />

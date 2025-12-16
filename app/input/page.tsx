@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import tecnologiasRaw from '@/app/data/tecnologias.json'
 
+// Carregar tecnologias do arquivo JSON
 const tecnologias = JSON.parse(JSON.stringify(tecnologiasRaw)) as Array<{
   title: string
   image: string
@@ -10,6 +11,7 @@ const tecnologias = JSON.parse(JSON.stringify(tecnologiasRaw)) as Array<{
   rating: number
 }>;
 
+// Componente da página de Input
 export default function InputPage() {
   // Input de texto com eco
   const [texto, setTexto] = useState('')
@@ -53,6 +55,7 @@ export default function InputPage() {
     setEditText('')
   }
 
+  // Renderizar a página de Input
   return (
     <main className="p-8 flex flex-col gap-8">
       <section className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">

@@ -14,12 +14,14 @@ const caracteristicas = [
   'Comunidade Ativa e Popularidade.'
 ];
 
+// Definindo o tipo para os parâmetros da página
 interface CaracteristicaPageProps {
   params: Promise<{
     caracteristica: string;
   }>;
 }
 
+// Componente da página que exibe a característica selecionada
 export default async function CaracteristicaPage({ params }: CaracteristicaPageProps) {
   const { caracteristica } = await params;
   const index = parseInt(caracteristica, 10);
@@ -31,6 +33,7 @@ export default async function CaracteristicaPage({ params }: CaracteristicaPageP
 
   const caracteristicaSelecionada = caracteristicas[index];
 
+  // Renderizar a página com a característica selecionada
   return (
     <main className="flex flex-col gap-8 items-center justify-center min-h-[60vh]">
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 rounded-lg shadow-lg p-12 border border-blue-200 dark:border-gray-600 max-w-2xl w-full text-center">

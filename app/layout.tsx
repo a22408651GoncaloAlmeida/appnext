@@ -41,6 +41,7 @@ export default function RootLayout({
             <Link href="/input">Input</Link>
             <Link href="/produtos">Loja</Link>
             <Link href="/contador">Contador</Link>
+            <Link href="/paises">Paises</Link>
           </nav>
         </header>
         

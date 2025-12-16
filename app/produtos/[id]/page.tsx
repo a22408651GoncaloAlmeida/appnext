@@ -1,231 +1,68 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
-import { Product } from '@/models/interfaces'
-import ProdutoCard from '@/components/ProdutoCard'
+import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 
-const API_URL = 'https://deisishop.pythonanywhere.com/products'
-const BUY_URL = 'https://deisishop.pythonanywhere.com/buy'
+const API_BASE = 'https://deisishop.pythonanywhere.com'
 
-// Função para buscar os produtos
-async function fetchProdutos(url: string): Promise<Product[]> {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error('Erro ao obter produtos')
-  return res.json()
+// Definindo o tipo para o produto
+type Produto = {
+  id: number
+  title: string
+  description: string
+  price: number
+  category: string
+  image: string
 }
 
-export default function ProdutosPage() {
-  const { data, error, isLoading } = useSWR<Product[]>(API_URL, fetchProdutos)
+// Componente da página do produto
+export default function ProdutoPage() {
+  const { id } = useParams()
+  const router = useRouter()
+  const [produto, setProduto] = useState<Produto | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // 🔍 pesquisa
-  const [search, setSearch] = useState('')
-
-  // 🔃 ordenação
-  const [order, setOrder] = useState('name-asc')
-
-  // 📦 produtos filtrados
-  const [filteredData, setFilteredData] = useState<Product[]>([])
-
-  // carrinho
-  const [cart, setCart] = useState<Product[]>([])
-
-  // estudante
-  const [student, setStudent] = useState(false)
-
-  // cupão
-  const [coupon, setCoupon] = useState('')
-
-  // resposta da compra
-  const [buyResponse, setBuyResponse] = useState<any>(null)
-
-  // carregar carrinho
+  // Buscar os dados do produto ao carregar o componente
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart')
-    if (storedCart) setCart(JSON.parse(storedCart))
-  }, [])
+    async function fetchProduto() {
+      const res = await fetch(`${API_BASE}/products/${id}`)
+      const data = await res.json()
 
-  // guardar carrinho
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
-
-  // 🔄 filtrar + ordenar sempre que algo muda
-  useEffect(() => {
-    if (!data) return
-
-    let result = [...data]
-
-    // 🔍 filtro por nome (case insensitive)
-    result = result.filter(p =>
-      p.title.toLowerCase().includes(search.toLowerCase())
-    )
-
-    // 🔃 ordenação
-    switch (order) {
-      case 'name-asc':
-        result.sort((a, b) => a.title.localeCompare(b.title))
-        break
-      case 'name-desc':
-        result.sort((a, b) => b.title.localeCompare(a.title))
-        break
-      case 'price-asc':
-        result.sort((a, b) => Number(a.price) - Number(b.price))
-        break
-      case 'price-desc':
-        result.sort((a, b) => Number(b.price) - Number(a.price))
-        break
-    }
-
-    setFilteredData(result)
-  }, [data, search, order])
-
-  function addToCart(produto: Product) {
-    setCart(prev => [...prev, produto])
-  }
-
-  function removeFromCart(id: number) {
-    setCart(prev => prev.filter(p => p.id !== id))
-  }
-
-  // total
-  const total = cart.reduce(
-    (sum, produto) => sum + Number(produto.price),
-    0
-  )
-
-  // COMPRAR
-  async function buy() {
-    try {
-      const response = await fetch(BUY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          products: cart.map(p => p.id),
-          name: 'Cliente',
-          student: student,
-          coupon: coupon,
-        }),
+      // Ajustar os dados do produto conforme necessário
+      setProduto({
+        ...data,
+        price: Number(data.price),
+        image: data.image.startsWith('http')
+          ? data.image
+          : `${API_BASE}${data.image}`,
       })
-
-      if (!response.ok) throw new Error(response.statusText)
-
-      const data = await response.json()
-      setBuyResponse(data)
-      setCart([])
-      localStorage.removeItem('cart')
-    } catch {
-      console.error('Erro ao comprar')
+      setLoading(false)
     }
-  }
+    fetchProduto()
+  }, [id])
 
-  if (isLoading) return <p className="p-8">A carregar produtos...</p>
-  if (error) return <p className="p-8 text-red-600">Erro ao carregar produtos</p>
+  if (loading) return <p className="p-8">A carregar...</p>
+  if (!produto) return <p className="p-8">Produto não encontrado</p>
 
+  // Renderizar a página do produto
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Produtos</h1>
+    <main className="p-8 max-w-xl mx-auto">
+      <Image src={produto.image} alt={produto.title} width={300} height={300} />
+      <h1 className="text-2xl font-bold mt-4">{produto.title}</h1>
+      <p className="text-gray-600">{produto.category}</p>
+      <p className="my-4">{produto.description}</p>
+      <p className="font-semibold">€ {produto.price.toFixed(2)}</p>
 
-      {/* 🔍 PESQUISA */}
-      <input
-        type="text"
-        placeholder="Pesquisar produto..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="border p-2 mb-4 w-full max-w-md"
-      />
-
-      {/* 🔃 ORDENAÇÃO */}
-      <select
-        value={order}
-        onChange={e => setOrder(e.target.value)}
-        className="border p-2 mb-6 block"
+      <button
+        className="mt-6 bg-red-600 text-white px-4 py-2 rounded"
+        onClick={() => {
+          alert('Produto removido (simulado)')
+          router.push('/produtos')
+        }}
       >
-        <option value="name-asc">Nome (A-Z)</option>
-        <option value="name-desc">Nome (Z-A)</option>
-        <option value="price-asc">Preço (crescente)</option>
-        <option value="price-desc">Preço (decrescente)</option>
-      </select>
-
-      {/* PRODUTOS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredData.map(produto => (
-          <ProdutoCard
-            key={produto.id}
-            produto={produto}
-            onAdd={addToCart}
-          />
-        ))}
-      </div>
-
-      {/* CARRINHO */}
-      <h2 className="text-xl font-bold mt-10 mb-4">Carrinho</h2>
-
-      {cart.length === 0 ? (
-        <p>O carrinho está vazio.</p>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cart.map((produto, index) => (
-              <ProdutoCard
-                key={`${produto.id}-${index}`}
-                produto={produto}
-                onRemove={removeFromCart}
-              />
-            ))}
-          </div>
-
-          <p className="text-lg font-semibold mt-4">
-            Total: € {total.toFixed(2)}
-          </p>
-
-          <label className="block mt-4">
-            <input
-              type="checkbox"
-              checked={student}
-              onChange={e => setStudent(e.target.checked)}
-              className="mr-2"
-            />
-            Estudante DEISI
-          </label>
-
-          <input
-            type="text"
-            placeholder="Cupão de desconto"
-            value={coupon}
-            onChange={e => setCoupon(e.target.value)}
-            className="border p-2 mt-2 block"
-          />
-
-          <button
-            onClick={buy}
-            className="bg-blue-600 text-white px-6 py-2 rounded mt-4"
-          >
-            Comprar
-          </button>
-        </>
-      )}
-
-      {/* RESPOSTA DA API */}
-      {buyResponse && (
-        <div className="mt-8 max-w-xl bg-white text-gray-800 border border-gray-300 rounded-lg p-6 shadow">
-          <h3 className="text-xl font-bold mb-4 text-green-700">
-            Compra realizada com sucesso
-          </h3>
-
-          <p className="mb-3">{buyResponse.message}</p>
-
-          <p className="mb-2">
-            O valor total da sua compra foi de{' '}
-            <strong>€ {Number(buyResponse.totalCost).toFixed(2)}</strong>.
-          </p>
-
-          <p>
-            A referência da sua compra é{' '}
-            <strong className="font-mono">{buyResponse.reference}</strong>.
-          </p>
-        </div>
-      )}
+        Remover produto
+      </button>
     </main>
   )
 }

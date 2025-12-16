@@ -12,3 +12,18 @@ export interface Product {
   image: string
   rating: Rating
 }
+
+export interface Pais {
+  name: {
+    common: string
+    official: string
+    nativeName: {
+      eng: {
+        official: string
+        common: string  
+      }
+    }
+  }
+  area: number
+  population: number
+}
